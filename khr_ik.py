@@ -16,16 +16,8 @@ scene = gs.Scene(
 # 床の追加
 scene.add_entity(gs.morphs.Plane())
 
-# Pandaロボットの読み込み
-'''
-robot = scene.add_entity(
-    gs.morphs.MJCF(
-        file="xml/franka_emika_panda/panda.xml"
-    )
-)
-'''
 # KHR-3HV
-base_pos  = [0.0, 0.0, 0.25]     #本体の初期高さ
+base_pos  = [0.0, 0.0, 0.256]     #本体の初期高さ
 base_quat = [1.0, 0.0, 0.0, 0.0] #本体の初期姿勢
 robot = scene.add_entity(
     gs.morphs.URDF(
@@ -42,6 +34,9 @@ scene.build()
 base_link = robot.get_link("base_link")
 r_foot = robot.get_link("r_foot")
 l_foot = robot.get_link("l_foot")
+
+print("r_foot:",r_foot.get_pos().cpu().numpy())
+
 
 joint_names = [
     "l_hip_yaw",
@@ -68,18 +63,20 @@ leg_dofs = [
 # 5. 左右足部の目標姿勢
 # --------------------------------------------------
 
-left_pos = np.array([0.0168, 0.0177, 0.0383])
-#right_pos = np.array([0.0168, -0.0177, 0.0383])
-right_pos = np.array([0.0168, -0.0177, 0.07])
+left_pos_ini = np.array([0.0168, 0.0177, 0.024])
+right_pos_ini = np.array([0.0168, -0.0177, 0.024])
+
+lift_z = np.array([0.,0.,0.05])
 
 left_quat = np.array([1.0, 0.0, 0.0, 0.0])
 right_quat = np.array([1.0, 0.0, 0.0, 0.0])
 
 q_init = robot.get_qpos().clone()
+q_init[2] += -0.1    # squat
 
 q_ik = robot.inverse_kinematics_multilink(
     links=[l_foot, r_foot],
-    poss=[left_pos, right_pos],
+    poss=[left_pos_ini, right_pos_ini+lift_z],
     quats=[left_quat, right_quat],
     init_qpos=q_init,
     dofs_idx_local=leg_dofs,

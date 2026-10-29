@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import CubicHermiteSpline
 
 # 境界条件
-t1, x1, v1 = 0.0, 0.5, 0.0
-t2, x2, v2 = 1.0, 0.5, 0.5   # lift off
-t3, x3, v3 = 1.1, 0.5, -0.5  # touch down
-t4, x4, v4 = 1.5, 0.5, 0.5   # lift off
-t5, x5, v5 = 1.6, 0.5, -0.5  # touch down
-t6, x6, v6 = 2.6, 0.5, 0.0
+t1, x1, v1 = 0.0, 0., 0.0
+t2, x2, v2 = 1.0, -0.03, 0.5   # lift off
+t3, x3, v3 = 1.1, -0.03, -0.5  # touch down
+t4, x4, v4 = 1.5, -0.03, 0.5   # lift off
+t5, x5, v5 = 1.6, -0.03, -0.5  # touch down
+t6, x6, v6 = 2.6, 0., 0.0
 
 # 3次スプライン補間
 spline = CubicHermiteSpline(
