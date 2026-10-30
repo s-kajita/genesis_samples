@@ -1,6 +1,7 @@
 import genesis as gs
 import numpy as np
 from scipy.interpolate import CubicHermiteSpline
+import matplotlib.pyplot as plt
 
 # 連続ジャンプのための境界条件
 Ttrans = 1.0
@@ -49,10 +50,34 @@ N = int(T[-1] / Dtime)
 time = np.array(range(N+1),float)*Dtime
 
 # ジャンプパターン
-z_pattern = spline(time)
+z_pos = spline(time)
+z_vel = spline(time,1)
+z_acc = spline(time,2)
 
+'''
+# グラフ表示
+fig, axes = plt.subplots(3, 1, figsize=(8, 8), sharex=True)
 
-# Genesisの初期化
+axes[0].plot(time, z_pos)
+axes[0].plot(T, X, 'ro')
+axes[0].set_ylabel('Position [m]')
+axes[0].grid()
+
+axes[1].plot(time, z_vel)
+axes[1].plot(T, V, 'ro')
+axes[1].set_ylabel('Velocity [m/s]')
+axes[1].grid()
+
+axes[2].plot(time, z_acc)
+axes[2].set_ylabel('Acceleration [m/s²]')
+axes[2].set_xlabel('Time [s]')
+axes[2].grid()
+
+plt.tight_layout()
+plt.show()
+'''
+
+#-------------------- Genesisの初期化 ----------------
 gs.init(backend=gs.cpu)
 
 # シーンの作成
@@ -122,7 +147,7 @@ right_quat = np.array([1.0, 0.0, 0.0, 0.0])
 
 q_init = robot.get_qpos().clone()
 
-for z in z_pattern:
+for z in z_pos:
     qpos = q_init.clone()
     qpos[2] += z    # set hip z motion
     print("z=",z,", qpos[2]=",qpos[2])

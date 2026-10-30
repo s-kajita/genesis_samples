@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import CubicHermiteSpline
 
 Ttrans = 1.0
-Tjump = 0.1
-Tsup  = 0.4
+Tjump = 0.05
+Tsup  = 0.5
 Gacc = 9.8    # m/s^2
 Vz = Gacc*Tjump/2.0   # liftoff speed
 Zliftoff = -0.03  # liftoff height = touchdown height
@@ -18,7 +18,7 @@ T.append(T[-1]+Ttrans)
 X.append(Zliftoff)
 V.append(Vz)
 
-Njump = 5
+Njump = 3
 for n in range(Njump):
     # touch down
     T.append(T[-1]+Tjump)
@@ -41,7 +41,7 @@ spline = CubicHermiteSpline(
 )
 
 # 時刻配列
-Dtime = 0.02  # [s]  = 50Hz
+Dtime = 0.01  # [s]  = 100Hz
 N = int(T[-1] / Dtime)
 t = np.array(range(N+1),float)*Dtime
 
