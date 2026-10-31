@@ -1,7 +1,7 @@
 import numpy as np
 import genesis as gs
 
-q_pattern = np.loadtxt('patterns/stepping.csv', delimiter=',')
+q_pattern = np.loadtxt('patterns/jump2_test.csv', delimiter=',')
 
 # 時刻配列
 Dtime = 0.01  # [s]  = 100Hz
@@ -9,7 +9,7 @@ N = len(q_pattern)
 time = np.array(range(N+1),float)*Dtime
 
 #-------------------- Genesisの初期化 ----------------
-gs.init(backend=gs.cpu)
+gs.init(backend=gs.cpu, logging_level="warning")
 
 
 CameraPos = (0.7, -0.7, 0.7)
@@ -37,7 +37,7 @@ base_pos  = [0.0, 0.0, 0.256]     #本体の初期高さ
 base_quat = [1.0, 0.0, 0.0, 0.0] #本体の初期姿勢
 robot = scene.add_entity(
     gs.morphs.URDF(
-        file="../assets/khr3hv/urdf/khr3hv.urdf", 
+        file="../assets/khr3hv/urdf/khr3hv_d.urdf", 
         pos =base_pos,
         quat=base_quat,
     ),
@@ -86,6 +86,8 @@ leg_dofs = [
     for name in joint_names
 ]
 
+joint2robot = np.argsort(leg_dofs)
+
 # --------------------------------------------------
 # 5. 左右足部の目標姿勢
 # --------------------------------------------------
@@ -118,16 +120,15 @@ print("Dynamic simulation")
 base_q = np.array([0.,0.,0., 0.,0.,0.])
 
 for i,q in enumerate(q_pattern):
-    full_q = np.concatenate([base_q,q])
+    full_q = np.concatenate([base_q,q[joint2robot]])
     robot.control_dofs_position(full_q)
     scene.step()
     # 動画のフレームを記録
     #if i % 3 == 0:
     #    camera.render()
-for n in range(100):
+for n in range(50):
     scene.step()
     # 動画のフレームを記録
     #if n % 3 == 0:
     #    camera.render()
 
-input("Press Enter to exit...")# 録画終了とファイル保存

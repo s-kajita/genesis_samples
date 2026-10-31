@@ -20,7 +20,7 @@ T.append(T[-1]+Ttrans)
 X.append(Zliftoff)
 V.append(Vz)
 
-Njump = 5
+Njump = 2                  #ジャンプ回数
 for n in range(Njump):
     # touch down
     T.append(T[-1]+Tjump)
@@ -97,7 +97,7 @@ base_pos  = [0.0, 0.0, 0.256]     #本体の初期高さ
 base_quat = [1.0, 0.0, 0.0, 0.0] #本体の初期姿勢
 robot = scene.add_entity(
     gs.morphs.URDF(
-        file="../assets/khr3hv/urdf/khr3hv_12dof.urdf",  #頭の位置が正しく表示される
+        file="../assets/khr3hv/urdf/khr3hv_d.urdf",  #頭の位置が正しく表示される
         pos=base_pos,
         quat=base_quat,
     ),
@@ -115,6 +115,18 @@ print("r_foot:",r_foot.get_pos().cpu().numpy())
 
 
 joint_names = [
+    "c_chest_yaw",
+    "l_shoulder_pitch",
+    "l_shoulder_roll",
+    "l_elbow_yaw",
+    "l_elbow_pitch",
+
+    "c_head_yaw",
+    "r_shoulder_pitch",
+    "r_shoulder_roll",
+    "r_elbow_yaw",
+    "r_elbow_pitch",
+   
     "l_hip_yaw",
     "l_hip_roll",
     "l_hip_pitch",
@@ -135,6 +147,14 @@ leg_dofs = [
     for name in joint_names
 ]
 
+# IKで得られる位置ベクトルは姿勢がクォータニオン(4要素)なので、インデックスが1ずれる
+joint_idx = [
+    robot.get_joint(name).dofs_idx_local[0]+1
+    for name in joint_names
+]
+
+robot2joint = np.argsort(leg_dofs)
+
 # --------------------------------------------------
 # 5. 左右足部の目標姿勢
 # --------------------------------------------------
@@ -147,6 +167,7 @@ right_quat = np.array([1.0, 0.0, 0.0, 0.0])
 
 q_init = robot.get_qpos().clone()
 
+q_pattern = []
 for z in z_pos:
     qpos = q_init.clone()
     qpos[2] += z    # set hip z motion
@@ -162,5 +183,11 @@ for z in z_pos:
     )
     robot.set_qpos(q_ik)          # IKで求めた関節位置をロボットに設定
     scene.visualizer.update()     # ビューアの更新
+
+    # パターンデータ生成
+    q_joint = q_ik.cpu().numpy()[joint_idx]
+    q_pattern.append(q_joint)
+
+np.savetxt('patterns/jump2_test.csv',q_pattern,fmt='%.12e',delimiter=',')
 
 input("Press Enter to exit...")
