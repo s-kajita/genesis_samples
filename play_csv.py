@@ -1,7 +1,10 @@
 import numpy as np
 import genesis as gs
+import sys
 
-q_pattern = np.loadtxt('patterns/jump2_test.csv', delimiter=',')
+fname = f"patterns/{sys.argv[1]}"
+print("Pattern file: ",fname)
+q_pattern = np.loadtxt(fname, delimiter=',')
 
 # 時刻配列
 Dtime = 0.01  # [s]  = 100Hz
@@ -55,12 +58,13 @@ print("r_foot:",r_foot.get_pos().cpu().numpy())
 
 joint_names = [
     "c_chest_yaw",
+    "c_head_yaw",
+
     "l_shoulder_pitch",
     "l_shoulder_roll",
     "l_elbow_yaw",
     "l_elbow_pitch",
 
-    "c_head_yaw",
     "r_shoulder_pitch",
     "r_shoulder_roll",
     "r_elbow_yaw",
@@ -131,4 +135,7 @@ for n in range(50):
     # 動画のフレームを記録
     #if n % 3 == 0:
     #    camera.render()
+
+input("Press Enter to exit...")
+
 

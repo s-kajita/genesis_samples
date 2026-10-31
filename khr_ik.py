@@ -54,9 +54,8 @@ joint_names = [
     "r_ankle_roll",
 ]
 
-leg_dofs = [
-    robot.get_joint(name).dofs_idx_local[0]
-    for name in joint_names
+joint_idx = [
+    robot.get_joint(s).dofs_idx_local[0]  for s in joint_names
 ]
 
 # --------------------------------------------------
@@ -79,7 +78,7 @@ q_ik = robot.inverse_kinematics_multilink(
     poss=[left_pos_ini, right_pos_ini+lift_z],
     quats=[left_quat, right_quat],
     init_qpos=q_init,
-    dofs_idx_local=leg_dofs,
+    dofs_idx_local=joint_idx,
     max_solver_iters=100,
 )
 

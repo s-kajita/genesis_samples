@@ -57,9 +57,8 @@ joint_names = [
     "r_ankle_roll",
 ]
 
-leg_dofs = [
-    robot.get_joint(name).dofs_idx_local[0]
-    for name in joint_names
+joint_idx = [
+    robot.get_joint(s).dofs_idx_local[0]  for s in joint_names
 ]
 
 

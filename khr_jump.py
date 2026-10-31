@@ -116,12 +116,13 @@ print("r_foot:",r_foot.get_pos().cpu().numpy())
 
 joint_names = [
     "c_chest_yaw",
+    "c_head_yaw",
+
     "l_shoulder_pitch",
     "l_shoulder_roll",
     "l_elbow_yaw",
     "l_elbow_pitch",
 
-    "c_head_yaw",
     "r_shoulder_pitch",
     "r_shoulder_roll",
     "r_elbow_yaw",
@@ -142,18 +143,17 @@ joint_names = [
     "r_ankle_roll",
 ]
 
-leg_dofs = [
-    robot.get_joint(name).dofs_idx_local[0]
-    for name in joint_names
-]
-
-# IKで得られる位置ベクトルは姿勢がクォータニオン(4要素)なので、インデックスが1ずれる
+# joint_names に対応する関節番号(インデックス)
 joint_idx = [
-    robot.get_joint(name).dofs_idx_local[0]+1
-    for name in joint_names
+    robot.get_joint(s).dofs_idx_local[0]  for s in joint_names
 ]
 
-robot2joint = np.argsort(leg_dofs)
+# IKで得られるベクトルは姿勢がクォータニオン(4要素)なので、インデックスが1ずれる
+ik_joint_idx = [
+    robot.get_joint(s).dofs_idx_local[0]+1  for s in joint_names
+]
+
+robot2joint = np.argsort(joint_idx)
 
 # --------------------------------------------------
 # 5. 左右足部の目標姿勢
@@ -178,14 +178,14 @@ for z in z_pos:
         poss=[left_pos_ini, right_pos_ini],
         quats=[left_quat, right_quat],
         init_qpos=qpos,
-        dofs_idx_local=leg_dofs,
+        dofs_idx_local=joint_idx,
         max_solver_iters=100,
     )
     robot.set_qpos(q_ik)          # IKで求めた関節位置をロボットに設定
     scene.visualizer.update()     # ビューアの更新
 
     # パターンデータ生成
-    q_joint = q_ik.cpu().numpy()[joint_idx]
+    q_joint = q_ik.cpu().numpy()[ik_joint_idx]
     q_pattern.append(q_joint)
 
 np.savetxt('patterns/jump2_test.csv',q_pattern,fmt='%.12e',delimiter=',')

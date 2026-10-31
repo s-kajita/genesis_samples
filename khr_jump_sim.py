@@ -54,29 +54,6 @@ z_pos = spline(time)
 z_vel = spline(time,1)
 z_acc = spline(time,2)
 
-'''
-# グラフ表示
-fig, axes = plt.subplots(3, 1, figsize=(8, 8), sharex=True)
-
-axes[0].plot(time, z_pos)
-axes[0].plot(T, X, 'ro')
-axes[0].set_ylabel('Position [m]')
-axes[0].grid()
-
-axes[1].plot(time, z_vel)
-axes[1].plot(T, V, 'ro')
-axes[1].set_ylabel('Velocity [m/s]')
-axes[1].grid()
-
-axes[2].plot(time, z_acc)
-axes[2].set_ylabel('Acceleration [m/s²]')
-axes[2].set_xlabel('Time [s]')
-axes[2].grid()
-
-plt.tight_layout()
-plt.show()
-'''
-
 #-------------------- Genesisの初期化 ----------------
 gs.init(backend=gs.cpu)
 
@@ -148,10 +125,7 @@ joint_names = [
     "r_ankle_roll",
 ]
 
-leg_dofs = [
-    robot.get_joint(name).dofs_idx_local[0]
-    for name in joint_names
-]
+joint_idx = [robot.get_joint(s).dofs_idx_local[0]  for s in joint_names]
 
 # --------------------------------------------------
 # 5. 左右足部の目標姿勢
@@ -169,12 +143,12 @@ q_init = robot.get_qpos().clone()
 # 位置ゲインの設定
 robot.set_dofs_kp(
     kp             = [25.0]*12,
-    dofs_idx_local = leg_dofs,
+    dofs_idx_local = joint_idx,
 )
 # 速度ゲインの設定
 robot.set_dofs_kv(
     kv             = [0.5]*12,
-    dofs_idx_local = leg_dofs,
+    dofs_idx_local = joint_idx,
 )
 
 q_log = []
@@ -191,12 +165,12 @@ for z in z_pos:
         poss=[left_pos_ini, right_pos_ini],
         quats=[left_quat, right_quat],
         init_qpos=qpos,
-        dofs_idx_local=leg_dofs,
+        dofs_idx_local=joint_idx,
         max_solver_iters=100,
     )
     robot.set_qpos(q_ik)          # IKで求めた関節位置をロボットに設定
     scene.visualizer.update()     # ビューアの更新
-    q_log.append(q_ik)        # 関節角の保存
+    q_log.append(q_ik[1:])        # q_ikはクォータニオン使用のため２番めのデータから保存
 
 #------------------- 動力学シミュレーション ---------------------
 print("Dynamic simulation")
@@ -204,7 +178,7 @@ print("Dynamic simulation")
 camera.start_recording()
 
 for i,q in enumerate(q_log):
-    robot.control_dofs_position(q[1:])
+    robot.control_dofs_position(q)
     scene.step()
     # 動画のフレームを記録
     if i % 3 == 0:
